@@ -35,7 +35,9 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $user = $request->user();
+        $user = $request->routeIs('home', 'projects', 'contact.store', 'sitemap', 'robots')
+            ? null
+            : $request->user();
 
         return [
             ...parent::share($request),

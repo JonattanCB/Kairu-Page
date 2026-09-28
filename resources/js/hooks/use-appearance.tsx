@@ -46,11 +46,16 @@ const applyTheme = (appearance: Appearance): void => {
         return;
     }
 
-    const isDark = isDarkMode(appearance);
+    const isDark =
+        !document.documentElement.dataset.kairu && isDarkMode(appearance);
 
     document.documentElement.classList.toggle('dark', isDark);
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 };
+
+export function refreshTheme(): void {
+    applyTheme(currentAppearance);
+}
 
 const subscribe = (callback: () => void) => {
     listeners.add(callback);
