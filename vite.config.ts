@@ -1,30 +1,9 @@
-import { execSync } from 'node:child_process';
 import inertia from '@inertiajs/vite';
-import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { defineConfig, lazyPlugins } from 'vite-plus';
-
-const hasPhp = () => {
-    // Wayfinder invokes `php artisan wayfinder:generate` during the build.
-    // Hosted frontend builds (for example Vercel) do not have PHP installed,
-    // so keep using the checked-in generated definitions there.
-    if (
-        process.env.VERCEL ||
-        process.env.CI ||
-        process.env.SKIP_WAYFINDER
-    ) {
-        return false;
-    }
-    try {
-        execSync('php -v', { stdio: 'ignore' });
-        return true;
-    } catch {
-        return false;
-    }
-};
 
 export default defineConfig({
     plugins: lazyPlugins(() => [
@@ -38,13 +17,6 @@ export default defineConfig({
             presets: [reactCompilerPreset()],
         }),
         tailwindcss(),
-        ...(hasPhp()
-            ? [
-                  wayfinder({
-                      formVariants: true,
-                  }),
-              ]
-            : []),
     ]),
     server: {
         watch: {
