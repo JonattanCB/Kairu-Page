@@ -18,6 +18,8 @@ export function Navbar({ projectsPage = false }: { projectsPage?: boolean }) {
         projectsPage && href.startsWith('#') ? `/${href}` : href;
     const [open, setOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up');
+    const lastScrollY = useRef(0);
     const [active, setActive] = useState(
         projectsPage ? '/proyectos' : '#inicio',
     );
@@ -33,7 +35,12 @@ export function Navbar({ projectsPage = false }: { projectsPage?: boolean }) {
         let cancelled = false;
         const update = () => {
             if (menuOpen.current) return;
-            setScrolled(window.scrollY > 12);
+            const currentY = window.scrollY;
+            if (Math.abs(currentY - lastScrollY.current) > 4) {
+                setScrollDirection(currentY > lastScrollY.current && currentY > 24 ? 'down' : 'up');
+                lastScrollY.current = currentY;
+            }
+            setScrolled(currentY > 12);
             if (projectsPage) {
                 setActive('/proyectos');
                 return;
@@ -156,7 +163,7 @@ export function Navbar({ projectsPage = false }: { projectsPage?: boolean }) {
     };
 
     return (
-        <header className={cn('kairu-navbar', scrolled && 'is-scrolled')}>
+        <header className={cn('kairu-navbar', scrolled && 'is-scrolled')} data-scroll-direction={scrollDirection}>
             <Container className="navbar-inner">
                 <a
                     href={sectionHref('#inicio')}

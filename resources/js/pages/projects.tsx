@@ -1,13 +1,17 @@
 import { Head } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Navbar } from '@/components/kairu/navbar';
 import { Footer } from '@/components/kairu/footer';
 import { Projects } from '@/components/kairu/projects';
 import { Container, KairuButton } from '@/components/kairu/primitives';
 import { refreshTheme } from '@/hooks/use-appearance';
+import { useLandingMotion } from '@/hooks/use-landing-motion';
 import type { ContactConfig } from '@/lib/kairu';
 
 export default function ProjectsPage({ contact }: { contact: ContactConfig }) {
+    const root = useRef<HTMLDivElement>(null);
+    useLandingMotion(root, true);
+
     useEffect(() => {
         const language = document.documentElement.lang;
         document.documentElement.lang = 'es-PE';
@@ -20,16 +24,16 @@ export default function ProjectsPage({ contact }: { contact: ContactConfig }) {
         };
     }, []);
     return (
-        <div className="kairu-theme kairu-site kairu-studio projects-page">
+        <div ref={root} className="kairu-theme kairu-site kairu-studio projects-page">
             <Head title="Proyectos y demos | Kairu" />
             <a href="#contenido" className="skip-link">
                 Saltar al contenido
             </a>
             <Navbar projectsPage />
             <main id="contenido" tabIndex={-1}>
-                <Projects />
+                <Projects contact={contact} />
                 <section className="projects-contact">
-                    <Container>
+                    <Container data-reveal>
                         <h2>¿Construimos el tuyo?</h2>
                         <p>Cuéntanos qué necesita tu negocio.</p>
                         <KairuButton asChild>

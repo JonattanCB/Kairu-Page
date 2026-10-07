@@ -1430,9 +1430,10 @@ html[data-kairu="true"] {
     text-align: left;
     border: 1px solid #e4eaf5;
 }
-.project-education .project-visual {
-    background: #f1f0eb;
-    border-color: #e7e6de;
+.project-education .project-visual,
+.project-escuela .project-visual {
+    background: #edf4fc;
+    border-color: #dbeafe;
 }
 .project-preview-trigger {
     position: absolute;
@@ -1445,9 +1446,10 @@ html[data-kairu="true"] {
 .kairu-theme .project-preview-trigger:focus-visible {
     outline-offset: -4px;
 }
-.project-commerce .project-visual {
-    background: #eef1f4;
-    border-color: #e3e7ec;
+.project-commerce .project-visual,
+.project-terapiq .project-visual {
+    background: #eef8f6;
+    border-color: #ccfbf1;
 }
 .demo-tag {
     position: absolute;
@@ -1555,6 +1557,10 @@ html[data-kairu="true"] {
     border: 1px solid var(--border);
     border-radius: 12px;
     overscroll-behavior: contain;
+    min-height: 520px;
+    height: 580px;
+    display: flex;
+    flex-direction: column;
 }
 .dashboard-interactive {
     min-width: 600px;
@@ -2705,6 +2711,39 @@ html[data-kairu="true"] {
         opacity: 1;
         transform: translate3d(0, 0, 0);
     }
+}
+.kairu-site [data-reveal] {
+    transition:
+        opacity 520ms var(--kairu-ease) var(--reveal-delay, 0ms),
+        transform 520ms var(--kairu-ease) var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+}
+.kairu-site [data-reveal][data-reveal-state="below"] {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0) scale(0.985);
+    --reveal-delay: 0ms;
+}
+.kairu-site [data-reveal][data-reveal-state="above"] {
+    opacity: 0;
+    transform: translate3d(0, -26px, 0) scale(0.985);
+    --reveal-delay: 0ms;
+}
+.kairu-site [data-reveal][data-reveal-state="visible"] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+}
+.kairu-navbar {
+    transition:
+        background-color 250ms ease,
+        border-color 250ms ease,
+        box-shadow 250ms var(--kairu-ease),
+        transform 250ms var(--kairu-ease);
+}
+.kairu-navbar.is-scrolled[data-scroll-direction="down"] {
+    box-shadow: 0 8px 24px -16px rgb(15 23 42 / 14%);
+}
+.kairu-navbar.is-scrolled[data-scroll-direction="up"] {
+    box-shadow: 0 12px 30px -14px rgb(25 72 216 / 14%);
 }
 @media (prefers-reduced-motion: reduce) {
     html[data-kairu="true"] {
@@ -5232,3 +5271,17 @@ html[data-kairu="true"] {
         width: 100%;
     }
 }
+
+.kairu-whatsapp-buy-btn {
+    border-color: rgb(21 128 61 / 28%) !important;
+    background: #f0fdf4 !important;
+    color: #166534 !important;
+}
+@media (hover: hover) and (pointer: fine) {
+    .kairu-whatsapp-buy-btn:hover {
+        background: #dcfce7 !important;
+        border-color: rgb(21 128 61 / 45%) !important;
+        color: #14532d !important;
+    }
+}
+

@@ -1,8 +1,8 @@
-import { animate, createTimeline, cubicBezier, stagger } from 'animejs';
+import { createTimeline, cubicBezier, stagger } from 'animejs';
 import { useEffect } from 'react';
 import type { RefObject } from 'react';
 
-type Motion = ReturnType<typeof animate> | ReturnType<typeof createTimeline>;
+type Motion = ReturnType<typeof createTimeline>;
 
 export function useLandingMotion(
     root: RefObject<HTMLDivElement | null>,
@@ -20,38 +20,86 @@ export function useLandingMotion(
 
         const configure = () => {
             dispose();
-            if (preference.matches) return;
+            const revealItems = Array.from(
+                element.querySelectorAll<HTMLElement>('[data-reveal]'),
+            );
+
+            if (preference.matches) {
+                revealItems.forEach((item) => {
+                    delete item.dataset.revealState;
+                    item.style.removeProperty('--reveal-delay');
+                });
+                return;
+            }
 
             const motions = new Set<Motion>();
             const track = <T extends Motion>(motion: T): T => {
                 motions.add(motion);
                 return motion;
             };
-            const copy = track(
-                createTimeline({ defaults: { ease, duration: 600 } }),
-            );
-            copy.add(
-                element.querySelector('.hero-copy h1')!,
-                { translateY: [20, 0] },
-                0,
-            )
-                .add(
-                    element.querySelector('.hero-copy > p')!,
-                    { opacity: [0, 1], translateY: [16, 0] },
-                    60,
-                )
-                .add(
-                    element.querySelector('.hero-actions')!,
-                    { opacity: [0, 1], translateY: [14, 0], duration: 500 },
-                    120,
+
+            const heroH1 = element.querySelector<HTMLElement>('.hero-copy h1');
+            const heroP = element.querySelector<HTMLElement>('.hero-copy > p');
+            const heroActions =
+                element.querySelector<HTMLElement>('.hero-actions');
+
+            let copyTimeline: ReturnType<typeof createTimeline> | undefined;
+            const playHeroCopy = () => {
+                if (!heroH1 || !heroP || !heroActions) return;
+                if (copyTimeline) {
+                    copyTimeline.restart();
+                    return;
+                }
+                copyTimeline = track(
+                    createTimeline({ defaults: { ease, duration: 600 } }),
                 );
+                copyTimeline
+                    .add(
+                        heroH1,
+                        { opacity: [0, 1], translateY: [20, 0] },
+                        0,
+                    )
+                    .add(
+                        heroP,
+                        { opacity: [0, 1], translateY: [16, 0] },
+                        60,
+                    )
+                    .add(
+                        heroActions,
+                        { opacity: [0, 1], translateY: [14, 0], duration: 500 },
+                        120,
+                    );
+            };
+
+            playHeroCopy();
+
+            const heroSection =
+                element.querySelector<HTMLElement>('.hero-section');
+            let heroWasOutOfView = false;
+            const heroObserver = heroSection
+                ? new IntersectionObserver(
+                      ([entry]) => {
+                          if (!entry.isIntersecting) {
+                              heroWasOutOfView = true;
+                          } else if (heroWasOutOfView && !document.hidden) {
+                              heroWasOutOfView = false;
+                              playHeroCopy();
+                          }
+                      },
+                      { threshold: 0.15 },
+                  )
+                : null;
+            if (heroSection && heroObserver) {
+                heroObserver.observe(heroSection);
+            }
 
             const devices =
-                element.querySelector<HTMLElement>('.brand-blueprint')!;
+                element.querySelector<HTMLElement>('.brand-blueprint');
             let demonstration: ReturnType<typeof createTimeline> | undefined;
             let visible = false;
 
-            const play = () => {
+            const playDevices = () => {
+                if (!devices) return;
                 if (demonstration) {
                     demonstration.restart();
                     return;
@@ -100,56 +148,135 @@ export function useLandingMotion(
             };
 
             const syncVisibility = () => {
-                if (visible && !document.hidden && !demonstration) play();
+                if (!devices) return;
+                if (visible && !document.hidden && !demonstration) playDevices();
                 if (!demonstration || demonstration.completed) return;
                 if (visible && !document.hidden) demonstration.resume();
                 else demonstration.pause();
             };
-            const deviceObserver = new IntersectionObserver(
-                ([entry]) => {
-                    visible = entry.isIntersecting;
-                    if (visible && !document.hidden && !demonstration) play();
-                    syncVisibility();
-                },
-                { threshold: 0.2 },
-            );
-            deviceObserver.observe(devices);
-            document.addEventListener('visibilitychange', syncVisibility);
+
+            let devicesWereOutOfView = false;
+            const deviceObserver = devices
+                ? new IntersectionObserver(
+                      ([entry]) => {
+                          visible = entry.isIntersecting;
+                          if (!visible) {
+                              devicesWereOutOfView = true;
+                          } else if (
+                              !document.hidden &&
+                              (!demonstration || devicesWereOutOfView)
+                          ) {
+                              devicesWereOutOfView = false;
+                              playDevices();
+                          }
+                          syncVisibility();
+                      },
+                      { threshold: 0.2 },
+                  )
+                : null;
+
+            if (devices && deviceObserver) {
+                deviceObserver.observe(devices);
+                document.addEventListener('visibilitychange', syncVisibility);
+            }
+
+            // Bidirectional scroll reveal (animates when scrolling down AND when scrolling up)
+            const primeRevealState = (item: HTMLElement) => {
+                const rect = item.getBoundingClientRect();
+                const viewportHeight =
+                    window.innerHeight || document.documentElement.clientHeight;
+                if (rect.bottom <= 0) {
+                    item.dataset.revealState = 'above';
+                } else if (rect.top >= viewportHeight) {
+                    item.dataset.revealState = 'below';
+                } else {
+                    item.dataset.revealState = 'visible';
+                }
+            };
 
             const revealObserver = new IntersectionObserver(
                 (entries) => {
                     const entering = entries.filter(
                         (entry) => entry.isIntersecting,
                     );
+                    const leaving = entries.filter(
+                        (entry) => !entry.isIntersecting,
+                    );
+
                     entering.forEach((entry, index) => {
-                        track(
-                            animate(entry.target, {
-                                opacity: [0, 1],
-                                translateY: [24, 0],
-                                duration: 600,
-                                delay: (index % 4) * 60,
-                                ease,
-                            }),
+                        const target = entry.target as HTMLElement;
+                        target.style.setProperty(
+                            '--reveal-delay',
+                            `${(index % 4) * 55}ms`,
                         );
-                        revealObserver.unobserve(entry.target);
+                        target.dataset.revealState = 'visible';
+                    });
+
+                    leaving.forEach((entry) => {
+                        const target = entry.target as HTMLElement;
+                        target.style.setProperty('--reveal-delay', '0ms');
+                        // Si salió por arriba al bajar el scroll -> 'above'; si salió por abajo al subir el scroll -> 'below'
+                        target.dataset.revealState =
+                            entry.boundingClientRect.top < 0
+                                ? 'above'
+                                : 'below';
                     });
                 },
-                { threshold: 0.15 },
+                {
+                    threshold: 0.12,
+                    rootMargin: '0px 0px -6% 0px',
+                },
             );
-            element
-                .querySelectorAll('[data-reveal]')
-                .forEach((item) => revealObserver.observe(item));
+
+            const observed = new WeakSet<Element>();
+            const observeRevealItem = (item: HTMLElement) => {
+                if (observed.has(item)) return;
+                observed.add(item);
+                primeRevealState(item);
+                revealObserver.observe(item);
+            };
+
+            revealItems.forEach(observeRevealItem);
+
+            // Observe dynamically added [data-reveal] items (e.g., filtering or loading more projects)
+            const mutationObserver = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (!(node instanceof HTMLElement)) return;
+                        if (node.hasAttribute('data-reveal')) {
+                            observeRevealItem(node);
+                        }
+                        node.querySelectorAll<HTMLElement>('[data-reveal]').forEach(
+                            observeRevealItem,
+                        );
+                    });
+                });
+            });
+            mutationObserver.observe(element, {
+                childList: true,
+                subtree: true,
+            });
 
             dispose = () => {
-                deviceObserver.disconnect();
+                heroObserver?.disconnect();
+                deviceObserver?.disconnect();
                 revealObserver.disconnect();
+                mutationObserver.disconnect();
                 document.removeEventListener(
                     'visibilitychange',
                     syncVisibility,
                 );
                 motions.forEach((motion) => motion.revert());
                 motions.clear();
-                delete devices.dataset.motion;
+                if (devices) {
+                    delete devices.dataset.motion;
+                }
+                element
+                    .querySelectorAll<HTMLElement>('[data-reveal]')
+                    .forEach((item) => {
+                        delete item.dataset.revealState;
+                        item.style.removeProperty('--reveal-delay');
+                    });
             };
         };
 

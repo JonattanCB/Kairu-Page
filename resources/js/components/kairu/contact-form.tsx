@@ -278,6 +278,7 @@ export function ContactForm({
                     ref={formRef}
                     onSubmit={(event) => void submit(event)}
                     className="contact-form"
+                    data-reveal
                     noValidate
                     aria-label="Cuéntanos qué necesitas"
                     aria-busy={pending}

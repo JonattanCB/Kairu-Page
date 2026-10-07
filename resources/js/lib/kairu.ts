@@ -13,11 +13,12 @@ export type ContactConfig = {
     socials: Record<string, string>;
 };
 
-export function whatsappUrl(contact?: ContactConfig) {
+export function whatsappUrl(contact?: ContactConfig, customMessage?: string) {
     const rawNumber = contact?.whatsapp || '51991886936';
     const cleanNumber = rawNumber.replace(/\D/g, '');
+    const message = customMessage || siteConfig.whatsappMessage;
     return cleanNumber
-        ? `https://wa.me/${cleanNumber}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`
+        ? `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`
         : '#contacto';
 }
 
@@ -112,28 +113,20 @@ export const processSteps = [
 
 export const demos = [
     {
-        id: 'distribution',
-        category: 'OPERACIONES · WEB + MÓVIL',
-        title: 'Sistema de distribución',
+        id: 'escuela',
+        category: 'EDUCACIÓN · GESTIÓN ESCOLAR',
+        title: 'AulaMental — Gestión Escolar',
         description:
-            'Aplicación móvil y panel administrativo para organizar pedidos y operaciones.',
-        label: 'Pedidos en orden. Entregas bajo control.',
+            'Plataforma integral para colegios: control de asistencia diaria, horarios interactivos, directorio docente, alumnos y comunicados escolares.',
+        label: 'Gestión escolar clara y organizada para directivos, docentes y familias.',
     },
     {
-        id: 'education',
-        category: 'EDUCACIÓN · PLATAFORMA WEB',
-        title: 'Plataforma educativa',
+        id: 'terapiq',
+        category: 'SALUD MENTAL · CONSULTA CLÍNICA',
+        title: 'TerapiQ — Gestión para Psicólogos',
         description:
-            'Gestión de alumnos, clases, contenido y administración en un mismo espacio.',
-        label: 'Más espacio para aprender.',
-    },
-    {
-        id: 'commerce',
-        category: 'GESTIÓN · SISTEMA EMPRESARIAL',
-        title: 'Sistema comercial',
-        description:
-            'Ventas, clientes, inventarios y reportes centralizados para el trabajo diario.',
-        label: 'La información que necesitas, a mano.',
+            'Software clínico especializado: agenda médica, expediente confidencial de pacientes, historial clínico por sesiones y métricas de consultorio.',
+        label: 'Consultas al día, pacientes en seguimiento continuo y evolución clínica estructurada.',
     },
 ] as const;
 

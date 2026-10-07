@@ -20,7 +20,7 @@ export function Footer({
         <>
             <footer className="kairu-footer">
                 <Container>
-                    <div className="footer-main">
+                    <div className="footer-main" data-reveal>
                         <div className="footer-brand">
                             <a
                                 href={sectionHref('#inicio')}
@@ -76,7 +76,7 @@ export function Footer({
                             </p>
                         </div>
                     </div>
-                    <div className="footer-bottom">
+                    <div className="footer-bottom" data-reveal>
                         <span>© {new Date().getFullYear()} Kairu.</span>
                         <span>
                             Diseñado y desarrollado en Perú.

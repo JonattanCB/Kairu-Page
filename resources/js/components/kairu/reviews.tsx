@@ -73,6 +73,7 @@ export function Reviews() {
                 </div>
                 <div
                     className="reviews-carousel"
+                    data-reveal
                     role="region"
                     aria-roledescription="carrusel"
                     aria-label="Reseñas de clientes"

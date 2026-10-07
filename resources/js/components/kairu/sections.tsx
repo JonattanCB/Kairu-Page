@@ -130,7 +130,7 @@ export function Philosophy() {
                         );
                     })}
                 </div>
-                <div className="philosophy-action">
+                <div className="philosophy-action" data-reveal>
                     <KairuButton asChild variant="secondary">
                         <a href="#servicios">
                             Conoce lo que hacemos{' '}
@@ -206,7 +206,7 @@ export function Services({
                         );
                     })}
                 </div>
-                <p className="services-footnote">
+                <p className="services-footnote" data-reveal>
                     <Combine aria-hidden="true" />
                     También conectamos tus herramientas y automatizamos tareas
                     repetitivas.
@@ -279,7 +279,7 @@ export function GrowthSection() {
                         </li>
                     ))}
                 </ol>
-                <div className="growth-caption">
+                <div className="growth-caption" data-reveal>
                     <Check aria-hidden="true" />
                     El siguiente paso tiene sentido cuando tu negocio lo
                     necesita.
@@ -349,7 +349,7 @@ export function About() {
                         ))}
                     </div>
                 </div>
-                <div className="collaboration-signature">
+                <div className="collaboration-signature" data-reveal>
                     <span className="collaboration-brand">
                         <img
                             src="/brand/kairu-mark.svg"

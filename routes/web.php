@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::withoutMiddleware(SetTeamUrlDefaults::class)->group(function () {
     Route::get('/', LandingController::class)->name('home');
     Route::get('/proyectos', LandingController::class)->name('projects');
+    Route::get('/proyectos/{demo}', LandingController::class)->name('projects.demo');
     Route::post('/contacto', ContactInquiryController::class)->middleware('throttle:contact')->name('contact.store');
     Route::get('/sitemap.xml', function () {
         return response()->view('sitemap', ['url' => config('kairu.url')])->header('Content-Type', 'application/xml');

@@ -1,5 +1,6 @@
-import { ArrowUpRight, ChevronDown, Search, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ExternalLink, Maximize2, Search, X } from "lucide-react";
 import { useRef, useState } from "react";
+import { Link } from "@inertiajs/react";
 import {
     Dialog,
     DialogContent,
@@ -7,12 +8,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { demos } from "@/lib/kairu";
-import type { DemoKind } from "@/lib/kairu";
+import { demos, whatsappUrl } from "@/lib/kairu";
+import type { ContactConfig, DemoKind } from "@/lib/kairu";
 import { DashboardPreview } from "./dashboard-preview";
-import { Container, KairuButton, SectionHeader } from "./primitives";
+import { Container, KairuButton, SectionHeader, WhatsAppIcon } from "./primitives";
 
-export function Projects() {
+export function Projects({ contact }: { contact?: ContactConfig }) {
     const [selected, setSelected] = useState<DemoKind | null>(null);
     const [query, setQuery] = useState("");
     const [category, setCategory] = useState("Todas");
@@ -53,10 +54,10 @@ export function Projects() {
                     />
                     <p className="section-side-note" data-reveal>
                         Abre un prototipo y pruébalo. <br />
-                        Recorre sus módulos y descubre cómo funciona.
+                        Recorre sus módulos y descubre cómo funciona cada sistema.
                     </p>
                 </div>
-                <div className="projects-toolbar">
+                <div className="projects-toolbar" data-reveal>
                     <label className="projects-search">
                         <Search aria-hidden="true" />
                         <input
@@ -144,18 +145,48 @@ export function Projects() {
                                     </button>
                                 </h3>
                                 <p>{item.description}</p>
-                                <KairuButton
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={(event) => {
-                                        trigger.current = event.currentTarget;
-                                        setSelected(item.id);
-                                    }}
-                                    aria-label={`Probar prototipo: ${item.title}`}
-                                >
-                                    Probar prototipo{" "}
-                                    <ArrowUpRight data-icon="inline-end" />
-                                </KairuButton>
+                                <div className="mt-3 flex flex-wrap items-center gap-2">
+                                    <KairuButton
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={(event) => {
+                                            trigger.current = event.currentTarget;
+                                            setSelected(item.id);
+                                        }}
+                                        aria-label={`Probar prototipo: ${item.title}`}
+                                    >
+                                        Probar prototipo{" "}
+                                        <ArrowUpRight data-icon="inline-end" />
+                                    </KairuButton>
+                                    <KairuButton
+                                        variant="secondary"
+                                        size="sm"
+                                        asChild
+                                    >
+                                        <Link href={`/proyectos/${item.id}`}>
+                                            Pantalla completa{" "}
+                                            <ExternalLink data-icon="inline-end" className="size-3.5" />
+                                        </Link>
+                                    </KairuButton>
+                                    <KairuButton
+                                        variant="secondary"
+                                        size="sm"
+                                        className="kairu-whatsapp-buy-btn"
+                                        asChild
+                                    >
+                                        <a
+                                            href={whatsappUrl(
+                                                contact,
+                                                `Hola Kairu, me interesa adquirir el sistema "${item.title}". ¿Podrían brindarme más información?`,
+                                            )}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <WhatsAppIcon data-icon="inline-start" className="size-4" />
+                                            Comprar por WhatsApp
+                                        </a>
+                                    </KairuButton>
+                                </div>
                             </div>
                         </article>
                     ))}
@@ -185,9 +216,8 @@ export function Projects() {
                         </KairuButton>
                     </div>
                 )}
-                <p className="demo-disclaimer">
-                    Demos conceptuales con datos de ejemplo. No representan
-                    proyectos de clientes.
+                <p className="demo-disclaimer" data-reveal>
+                    Prototipos funcionales basados en proyectos de software construidos por Kairu.
                 </p>
             </Container>
             <Dialog
@@ -195,7 +225,7 @@ export function Projects() {
                 onOpenChange={(open) => !open && setSelected(null)}
             >
                 <DialogContent
-                    className="kairu-theme kairu-demo-dialog"
+                    className="kairu-theme kairu-demo-dialog max-w-4xl"
                     closeLabel="Cerrar demo"
                     onCloseAutoFocus={(event) => {
                         event.preventDefault();
@@ -203,11 +233,23 @@ export function Projects() {
                     }}
                 >
                     <DialogHeader>
-                        <DialogTitle>{demo?.title}</DialogTitle>
-                        <DialogDescription>
-                            {demo?.label} Prueba las secciones del menú y
-                            selecciona una fila para ver su detalle.
-                        </DialogDescription>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <DialogTitle>{demo?.title}</DialogTitle>
+                                <DialogDescription>
+                                    {demo?.label} Explora los diferentes módulos en la barra lateral para interactuar.
+                                </DialogDescription>
+                            </div>
+                            {selected && (
+                                <Link
+                                    href={`/proyectos/${selected}`}
+                                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                                >
+                                    <Maximize2 className="size-3.5" />
+                                    Pantalla completa ↗
+                                </Link>
+                            )}
+                        </div>
                     </DialogHeader>
                     {selected && (
                         <div className="interactive-demo-viewport">
@@ -215,19 +257,56 @@ export function Projects() {
                                 key={selected}
                                 kind={selected}
                                 interactive
+                                onOpenFullScreen={() => {
+                                    window.location.href = `/proyectos/${selected}`;
+                                }}
                             />
                         </div>
                     )}
                     <div className="demo-dialog-footer">
-                        <p>Interfaz de demostración · datos de ejemplo</p>
-                        <KairuButton
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelected(null)}
-                        >
-                            <X data-icon="inline-start" />
-                            Cerrar demo
-                        </KairuButton>
+                        <p>Prototipo interactivo en vivo · datos de ejemplo</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {demo && (
+                                <KairuButton
+                                    variant="secondary"
+                                    size="sm"
+                                    className="kairu-whatsapp-buy-btn"
+                                    asChild
+                                >
+                                    <a
+                                        href={whatsappUrl(
+                                            contact,
+                                            `Hola Kairu, acabo de probar el prototipo de "${demo.title}" y me interesa adquirirlo.`,
+                                        )}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <WhatsAppIcon data-icon="inline-start" className="size-4" />
+                                        Comprar por WhatsApp
+                                    </a>
+                                </KairuButton>
+                            )}
+                            {selected && (
+                                <KairuButton
+                                    variant="secondary"
+                                    size="sm"
+                                    asChild
+                                >
+                                    <Link href={`/proyectos/${selected}`}>
+                                        <ExternalLink data-icon="inline-start" className="size-3.5" />
+                                        Pantalla completa
+                                    </Link>
+                                </KairuButton>
+                            )}
+                            <KairuButton
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelected(null)}
+                            >
+                                <X data-icon="inline-start" />
+                                Cerrar demo
+                            </KairuButton>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
