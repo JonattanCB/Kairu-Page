@@ -8,7 +8,14 @@ import laravel from 'laravel-vite-plugin';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
 const hasPhp = () => {
-    if (process.env.VERCEL || process.env.SKIP_WAYFINDER) {
+    // Wayfinder invokes `php artisan wayfinder:generate` during the build.
+    // Hosted frontend builds (for example Vercel) do not have PHP installed,
+    // so keep using the checked-in generated definitions there.
+    if (
+        process.env.VERCEL ||
+        process.env.CI ||
+        process.env.SKIP_WAYFINDER
+    ) {
         return false;
     }
     try {
